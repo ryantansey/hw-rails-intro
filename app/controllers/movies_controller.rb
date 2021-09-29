@@ -7,17 +7,52 @@ class MoviesController < ApplicationController
     end
   
     def index
-      @all_ratings = ['G', 'PG', 'PG-13', 'R', 'NC-17']
-      @ratings = params[:ratings]
-      @ratings_to_show = []
-      if params[:sort] == "title"
-        @movies = Movie.filter_ratings(@ratings).order(title: :asc)
-        @title_header = 'hilite bg-warning'
-      elsif params[:sort] == "release_date"
-        @movies = Movie.filter_ratings(@ratings).order(release_date: :asc)
-        @release_date_header = 'hilite bg-warning'
+      @all_ratings = Movie.all_ratings
+      redirect = false
+      
+      if params[:sort]
+        @sort = params[:sort]
+        session[:sort] = params[:sort]
+      elsif session[:sort]
+        @sort = session[:sort]
+        redirect = true
       else
-        @movies = Movie.filter_ratings(@ratings)
+        @sort = nil
+      end
+
+      if @sort == "title"
+        @title_header = 'hilite bg-warning'
+      elsif @sort == "release_date"
+        @release_date_header = 'hilite bg-warning'
+      end
+
+      if params[:commit] == 'Refresh' and params[:ratings].nil?
+        @ratings = nil
+        session[:ratings] = nil
+      elsif params[:ratings]
+        @ratings = params[:ratings]
+        session[:ratings] = params[:ratings]
+      elsif session[:ratings]
+        @ratings = session[:ratings]
+        redirect = true
+      else
+        @ratings = nil
+      end
+
+      if @ratings and @sort
+        @movies = Movie.where(:rating => @ratings.keys).order(@sort)
+      elsif @ratings
+        @movies = Movie.where(:rating => @ratings.keys)
+      elsif @sort
+        @movies = Movie.order(@sort)
+      else
+        @movies = Movie.all
+      end
+      if !@ratings
+        @ratings = {}
+      end
+      if redirect
+        flash.keep
       end
     end
   
