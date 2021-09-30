@@ -21,9 +21,9 @@ class MoviesController < ApplicationController
       end
 
       if @sort == "title"
-        @title_header = 'hilite bg-warning'
+        @title_header = 'hilite'
       elsif @sort == "release_date"
-        @release_date_header = 'hilite bg-warning'
+        @release_date_header = 'hilite'
       end
 
       if params[:commit] == 'Refresh' and params[:ratings].nil?
